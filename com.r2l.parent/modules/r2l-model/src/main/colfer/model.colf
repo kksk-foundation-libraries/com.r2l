@@ -1,0 +1,18 @@
+package model
+
+type RdbEvent struct {
+	eventId				uint64
+	action				uint8
+	tableId				uint32
+	record				binary
+}
+
+type HistoricalData struct {
+	primaryKey			binary
+	begin				uint64
+	end					uint64
+}
+
+type IndexValue struct {
+	historicalData		[]HistoricalData
+}
