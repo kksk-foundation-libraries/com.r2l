@@ -48,5 +48,6 @@
 		<module>r2l-rdb-event-provider</module>
 		<module>r2l-mastercache-event-processor</module>
 		<module>r2l-indexcache-event-processor</module>
+		<module>r2l-client</module>
 	</modules>
 </project>

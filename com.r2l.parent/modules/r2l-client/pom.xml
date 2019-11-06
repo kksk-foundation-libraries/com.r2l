@@ -7,16 +7,5 @@
 		<artifactId>modules</artifactId>
 		<version>1.0.0-SNAPSHOT</version>
 	</parent>
-	<artifactId>r2l-rdb-event-provider</artifactId>
-	<dependencies>
-		<dependency>
-			<groupId>com.r2l</groupId>
-			<artifactId>r2l-core</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.pulsar</groupId>
-			<artifactId>pulsar-client</artifactId>
-		</dependency>
-	</dependencies>
+	<artifactId>r2l-client</artifactId>
 </project>
