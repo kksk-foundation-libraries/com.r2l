@@ -16,3 +16,7 @@ type HistoricalData struct {
 type IndexValue struct {
 	historicalData		[]HistoricalData
 }
+
+type PrimaryKeys struct {
+	data				[]binary
+}
