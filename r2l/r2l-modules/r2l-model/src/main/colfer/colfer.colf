@@ -1,0 +1,15 @@
+package colf
+
+type OutboxCommon struct {
+	txnId					text
+	id						text
+	seq						uint32
+}
+
+type OutboxDetail struct {
+	txnId					text
+	maxId					text
+	maxSeq					uint32
+	id						text
+	seq						uint32
+}
