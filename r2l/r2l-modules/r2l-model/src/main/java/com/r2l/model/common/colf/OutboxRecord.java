@@ -25,7 +25,7 @@ import java.nio.BufferUnderflowException;
  * @see <a href="https://github.com/pascaldekloe/colfer">Colfer's home</a>
  */
 @javax.annotation.Generated(value="colf(1)", comments="Colfer from schema file colfer.colf")
-public class OutboxCommon extends com.r2l.model.ColferObject implements Serializable {
+public class OutboxRecord extends com.r2l.model.ColferObject implements Serializable {
 
 	/** The upper limit for serial byte sizes. */
 	public static int colferSizeMax = 16 * 1024 * 1024;
@@ -33,23 +33,22 @@ public class OutboxCommon extends com.r2l.model.ColferObject implements Serializ
 
 
 
-	public String txnId;
+	public String eventId;
 
-	public String id;
-
-	public int seq;
+	public byte[] record;
 
 
 	/** Default constructor */
-	public OutboxCommon() {
+	public OutboxRecord() {
 		init();
 	}
 
+	private static final byte[] _zeroBytes = new byte[0];
 
 	/** Colfer zero values. */
 	private void init() {
-		txnId = "";
-		id = "";
+		eventId = "";
+		record = _zeroBytes;
 	}
 
 	/**
@@ -77,7 +76,7 @@ public class OutboxCommon extends com.r2l.model.ColferObject implements Serializ
 		public Unmarshaller(InputStream in, byte[] buf) {
 			// TODO: better size estimation
 			if (buf == null || buf.length == 0)
-				buf = new byte[Math.min(OutboxCommon.colferSizeMax, 2048)];
+				buf = new byte[Math.min(OutboxRecord.colferSizeMax, 2048)];
 			this.buf = buf;
 			reset(in);
 		}
@@ -101,13 +100,13 @@ public class OutboxCommon extends com.r2l.model.ColferObject implements Serializ
 		 * @throws SecurityException on an upper limit breach defined by {@link #colferSizeMax}.
 		 * @throws InputMismatchException when the data does not match this object's schema.
 		 */
-		public OutboxCommon next() throws IOException {
+		public OutboxRecord next() throws IOException {
 			if (in == null) return null;
 
 			while (true) {
 				if (this.i > this.offset) {
 					try {
-						OutboxCommon o = new OutboxCommon();
+						OutboxRecord o = new OutboxRecord();
 						this.offset = o.unmarshal(this.buf, this.offset, this.i);
 						return o;
 					} catch (BufferUnderflowException e) {
@@ -121,7 +120,7 @@ public class OutboxCommon extends com.r2l.model.ColferObject implements Serializ
 				} else if (i == buf.length) {
 					byte[] src = this.buf;
 					// TODO: better size estimation
-					if (offset == 0) this.buf = new byte[Math.min(OutboxCommon.colferSizeMax, this.buf.length * 4)];
+					if (offset == 0) this.buf = new byte[Math.min(OutboxRecord.colferSizeMax, this.buf.length * 4)];
 					System.arraycopy(src, this.offset, this.buf, 0, this.i - this.offset);
 					this.i -= this.offset;
 					this.offset = 0;
@@ -154,14 +153,14 @@ public class OutboxCommon extends com.r2l.model.ColferObject implements Serializ
 	public byte[] marshal(OutputStream out, byte[] buf) throws IOException {
 		// TODO: better size estimation
 		if (buf == null || buf.length == 0)
-			buf = new byte[Math.min(OutboxCommon.colferSizeMax, 2048)];
+			buf = new byte[Math.min(OutboxRecord.colferSizeMax, 2048)];
 
 		while (true) {
 			int i;
 			try {
 				i = marshal(buf, 0);
 			} catch (BufferOverflowException e) {
-				buf = new byte[Math.min(OutboxCommon.colferSizeMax, buf.length * 4)];
+				buf = new byte[Math.min(OutboxRecord.colferSizeMax, buf.length * 4)];
 				continue;
 			}
 
@@ -182,11 +181,11 @@ public class OutboxCommon extends com.r2l.model.ColferObject implements Serializ
 		int i = offset;
 
 		try {
-			if (! this.txnId.isEmpty()) {
+			if (! this.eventId.isEmpty()) {
 				buf[i++] = (byte) 0;
 				int start = ++i;
 
-				String s = this.txnId;
+				String s = this.eventId;
 				for (int sIndex = 0, sLength = s.length(); sIndex < sLength; sIndex++) {
 					char c = s.charAt(sIndex);
 					if (c < '\u0080') {
@@ -211,8 +210,8 @@ public class OutboxCommon extends com.r2l.model.ColferObject implements Serializ
 					}
 				}
 				int size = i - start;
-				if (size > OutboxCommon.colferSizeMax)
-					throw new IllegalStateException(format("colfer: com/r2l/model/common/colf.OutboxCommon.txnId size %d exceeds %d UTF-8 bytes", size, OutboxCommon.colferSizeMax));
+				if (size > OutboxRecord.colferSizeMax)
+					throw new IllegalStateException(format("colfer: com/r2l/model/common/colf.OutboxRecord.eventId size %d exceeds %d UTF-8 bytes", size, OutboxRecord.colferSizeMax));
 
 				int ii = start - 1;
 				if (size > 0x7f) {
@@ -228,74 +227,30 @@ public class OutboxCommon extends com.r2l.model.ColferObject implements Serializ
 				buf[ii] = (byte) size;
 			}
 
-			if (! this.id.isEmpty()) {
+			if (this.record.length != 0) {
 				buf[i++] = (byte) 1;
-				int start = ++i;
 
-				String s = this.id;
-				for (int sIndex = 0, sLength = s.length(); sIndex < sLength; sIndex++) {
-					char c = s.charAt(sIndex);
-					if (c < '\u0080') {
-						buf[i++] = (byte) c;
-					} else if (c < '\u0800') {
-						buf[i++] = (byte) (192 | c >>> 6);
-						buf[i++] = (byte) (128 | c & 63);
-					} else if (c < '\ud800' || c > '\udfff') {
-						buf[i++] = (byte) (224 | c >>> 12);
-						buf[i++] = (byte) (128 | c >>> 6 & 63);
-						buf[i++] = (byte) (128 | c & 63);
-					} else {
-						int cp = 0;
-						if (++sIndex < sLength) cp = Character.toCodePoint(c, s.charAt(sIndex));
-						if ((cp >= 1 << 16) && (cp < 1 << 21)) {
-							buf[i++] = (byte) (240 | cp >>> 18);
-							buf[i++] = (byte) (128 | cp >>> 12 & 63);
-							buf[i++] = (byte) (128 | cp >>> 6 & 63);
-							buf[i++] = (byte) (128 | cp & 63);
-						} else
-							buf[i++] = (byte) '?';
-					}
-				}
-				int size = i - start;
-				if (size > OutboxCommon.colferSizeMax)
-					throw new IllegalStateException(format("colfer: com/r2l/model/common/colf.OutboxCommon.id size %d exceeds %d UTF-8 bytes", size, OutboxCommon.colferSizeMax));
+				int size = this.record.length;
+				if (size > OutboxRecord.colferSizeMax)
+					throw new IllegalStateException(format("colfer: com/r2l/model/common/colf.OutboxRecord.record size %d exceeds %d bytes", size, OutboxRecord.colferSizeMax));
 
-				int ii = start - 1;
-				if (size > 0x7f) {
-					i++;
-					for (int x = size; x >= 1 << 14; x >>>= 7) i++;
-					System.arraycopy(buf, start, buf, i - size, size);
-
-					do {
-						buf[ii++] = (byte) (size | 0x80);
-						size >>>= 7;
-					} while (size > 0x7f);
-				}
-				buf[ii] = (byte) size;
-			}
-
-			if (this.seq != 0) {
-				int x = this.seq;
-				if ((x & ~((1 << 21) - 1)) != 0) {
-					buf[i++] = (byte) (2 | 0x80);
-					buf[i++] = (byte) (x >>> 24);
-					buf[i++] = (byte) (x >>> 16);
-					buf[i++] = (byte) (x >>> 8);
-				} else {
-					buf[i++] = (byte) 2;
-					while (x > 0x7f) {
-						buf[i++] = (byte) (x | 0x80);
-						x >>>= 7;
-					}
+				int x = size;
+				while (x > 0x7f) {
+					buf[i++] = (byte) (x | 0x80);
+					x >>>= 7;
 				}
 				buf[i++] = (byte) x;
+
+				int start = i;
+				i += size;
+				System.arraycopy(this.record, 0, buf, start, size);
 			}
 
 			buf[i++] = (byte) 0x7f;
 			return i;
 		} catch (ArrayIndexOutOfBoundsException e) {
-			if (i - offset > OutboxCommon.colferSizeMax)
-				throw new IllegalStateException(format("colfer: com/r2l/model/common/colf.OutboxCommon exceeds %d bytes", OutboxCommon.colferSizeMax));
+			if (i - offset > OutboxRecord.colferSizeMax)
+				throw new IllegalStateException(format("colfer: com/r2l/model/common/colf.OutboxRecord exceeds %d bytes", OutboxRecord.colferSizeMax));
 			if (i > buf.length) throw new BufferOverflowException();
 			throw e;
 		}
@@ -338,12 +293,12 @@ public class OutboxCommon extends com.r2l.model.ColferObject implements Serializ
 					size |= (b & 0x7f) << shift;
 					if (shift == 28 || b >= 0) break;
 				}
-				if (size < 0 || size > OutboxCommon.colferSizeMax)
-					throw new SecurityException(format("colfer: com/r2l/model/common/colf.OutboxCommon.txnId size %d exceeds %d UTF-8 bytes", size, OutboxCommon.colferSizeMax));
+				if (size < 0 || size > OutboxRecord.colferSizeMax)
+					throw new SecurityException(format("colfer: com/r2l/model/common/colf.OutboxRecord.eventId size %d exceeds %d UTF-8 bytes", size, OutboxRecord.colferSizeMax));
 
 				int start = i;
 				i += size;
-				this.txnId = new String(buf, start, size, StandardCharsets.UTF_8);
+				this.eventId = new String(buf, start, size, StandardCharsets.UTF_8);
 				header = buf[i++];
 			}
 
@@ -354,35 +309,23 @@ public class OutboxCommon extends com.r2l.model.ColferObject implements Serializ
 					size |= (b & 0x7f) << shift;
 					if (shift == 28 || b >= 0) break;
 				}
-				if (size < 0 || size > OutboxCommon.colferSizeMax)
-					throw new SecurityException(format("colfer: com/r2l/model/common/colf.OutboxCommon.id size %d exceeds %d UTF-8 bytes", size, OutboxCommon.colferSizeMax));
+				if (size < 0 || size > OutboxRecord.colferSizeMax)
+					throw new SecurityException(format("colfer: com/r2l/model/common/colf.OutboxRecord.record size %d exceeds %d bytes", size, OutboxRecord.colferSizeMax));
 
+				this.record = new byte[size];
 				int start = i;
 				i += size;
-				this.id = new String(buf, start, size, StandardCharsets.UTF_8);
-				header = buf[i++];
-			}
+				System.arraycopy(buf, start, this.record, 0, size);
 
-			if (header == (byte) 2) {
-				int x = 0;
-				for (int shift = 0; true; shift += 7) {
-					byte b = buf[i++];
-					x |= (b & 0x7f) << shift;
-					if (shift == 28 || b >= 0) break;
-				}
-				this.seq = x;
-				header = buf[i++];
-			} else if (header == (byte) (2 | 0x80)) {
-				this.seq = (buf[i++] & 0xff) << 24 | (buf[i++] & 0xff) << 16 | (buf[i++] & 0xff) << 8 | (buf[i++] & 0xff);
 				header = buf[i++];
 			}
 
 			if (header != (byte) 0x7f)
 				throw new InputMismatchException(format("colfer: unknown header at byte %d", i - 1));
 		} finally {
-			if (i > end && end - offset < OutboxCommon.colferSizeMax) throw new BufferUnderflowException();
-			if (i < 0 || i - offset > OutboxCommon.colferSizeMax)
-				throw new SecurityException(format("colfer: com/r2l/model/common/colf.OutboxCommon exceeds %d bytes", OutboxCommon.colferSizeMax));
+			if (i > end && end - offset < OutboxRecord.colferSizeMax) throw new BufferUnderflowException();
+			if (i < 0 || i - offset > OutboxRecord.colferSizeMax)
+				throw new SecurityException(format("colfer: com/r2l/model/common/colf.OutboxRecord exceeds %d bytes", OutboxRecord.colferSizeMax));
 			if (i > end) throw new BufferUnderflowException();
 		}
 
@@ -390,7 +333,7 @@ public class OutboxCommon extends com.r2l.model.ColferObject implements Serializ
 	}
 
 	// {@link Serializable} version number.
-	private static final long serialVersionUID = 3L;
+	private static final long serialVersionUID = 2L;
 
 	// {@link Serializable} Colfer extension.
 	private void writeObject(ObjectOutputStream out) throws IOException {
@@ -424,104 +367,76 @@ public class OutboxCommon extends com.r2l.model.ColferObject implements Serializ
 	}
 
 	/**
-	 * Gets com/r2l/model/common/colf.OutboxCommon.txnId.
+	 * Gets com/r2l/model/common/colf.OutboxRecord.eventId.
 	 * @return the value.
 	 */
-	public String getTxnId() {
-		return this.txnId;
+	public String getEventId() {
+		return this.eventId;
 	}
 
 	/**
-	 * Sets com/r2l/model/common/colf.OutboxCommon.txnId.
+	 * Sets com/r2l/model/common/colf.OutboxRecord.eventId.
 	 * @param value the replacement.
 	 */
-	public void setTxnId(String value) {
-		this.txnId = value;
+	public void setEventId(String value) {
+		this.eventId = value;
 	}
 
 	/**
-	 * Sets com/r2l/model/common/colf.OutboxCommon.txnId.
+	 * Sets com/r2l/model/common/colf.OutboxRecord.eventId.
 	 * @param value the replacement.
 	 * @return {link this}.
 	 */
-	public OutboxCommon withTxnId(String value) {
-		this.txnId = value;
+	public OutboxRecord withEventId(String value) {
+		this.eventId = value;
 		return this;
 	}
 
 	/**
-	 * Gets com/r2l/model/common/colf.OutboxCommon.id.
+	 * Gets com/r2l/model/common/colf.OutboxRecord.record.
 	 * @return the value.
 	 */
-	public String getId() {
-		return this.id;
+	public byte[] getRecord() {
+		return this.record;
 	}
 
 	/**
-	 * Sets com/r2l/model/common/colf.OutboxCommon.id.
+	 * Sets com/r2l/model/common/colf.OutboxRecord.record.
 	 * @param value the replacement.
 	 */
-	public void setId(String value) {
-		this.id = value;
+	public void setRecord(byte[] value) {
+		this.record = value;
 	}
 
 	/**
-	 * Sets com/r2l/model/common/colf.OutboxCommon.id.
+	 * Sets com/r2l/model/common/colf.OutboxRecord.record.
 	 * @param value the replacement.
 	 * @return {link this}.
 	 */
-	public OutboxCommon withId(String value) {
-		this.id = value;
-		return this;
-	}
-
-	/**
-	 * Gets com/r2l/model/common/colf.OutboxCommon.seq.
-	 * @return the value.
-	 */
-	public int getSeq() {
-		return this.seq;
-	}
-
-	/**
-	 * Sets com/r2l/model/common/colf.OutboxCommon.seq.
-	 * @param value the replacement.
-	 */
-	public void setSeq(int value) {
-		this.seq = value;
-	}
-
-	/**
-	 * Sets com/r2l/model/common/colf.OutboxCommon.seq.
-	 * @param value the replacement.
-	 * @return {link this}.
-	 */
-	public OutboxCommon withSeq(int value) {
-		this.seq = value;
+	public OutboxRecord withRecord(byte[] value) {
+		this.record = value;
 		return this;
 	}
 
 	@Override
 	public final int hashCode() {
 		int h = 1;
-		if (this.txnId != null) h = 31 * h + this.txnId.hashCode();
-		if (this.id != null) h = 31 * h + this.id.hashCode();
-		h = 31 * h + this.seq;
+		if (this.eventId != null) h = 31 * h + this.eventId.hashCode();
+		for (byte b : this.record) h = 31 * h + b;
 		return h;
 	}
 
 	@Override
 	public final boolean equals(Object o) {
-		return o instanceof OutboxCommon && equals((OutboxCommon) o);
+		return o instanceof OutboxRecord && equals((OutboxRecord) o);
 	}
 
-	public final boolean equals(OutboxCommon o) {
+	public final boolean equals(OutboxRecord o) {
 		if (o == null) return false;
 		if (o == this) return true;
-		return o.getClass() == OutboxCommon.class
-			&& (this.txnId == null ? o.txnId == null : this.txnId.equals(o.txnId))
-			&& (this.id == null ? o.id == null : this.id.equals(o.id))
-			&& this.seq == o.seq;
+		return o.getClass() == OutboxRecord.class
+			&& (this.eventId == null ? o.eventId == null : this.eventId.equals(o.eventId))
+			&& java.util.Arrays.equals(this.record, o.record);
 	}
 
 }

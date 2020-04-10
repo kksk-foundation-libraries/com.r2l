@@ -1,15 +1,20 @@
 package colf
 
-type OutboxCommon struct {
-	txnId					text
-	id						text
-	seq						uint32
+type OutboxCommand struct {
+	transactionId			text
+	maxEventId				text
+	maxSerialNo				uint32
 }
 
-type OutboxDetail struct {
-	txnId					text
-	maxId					text
-	maxSeq					uint32
-	id						text
-	seq						uint32
+type OutboxEvent struct {
+	eventId					text
+	transactionId			text
+	serialNo				uint32
+	eventTarget				text
+	action					uint8
+}
+
+type OutboxRecord struct {
+	eventId					text
+	record					binary
 }
