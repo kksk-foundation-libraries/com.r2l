@@ -18,3 +18,9 @@ type OutboxRecord struct {
 	eventId					text
 	record					binary
 }
+
+type OutboxData struct {
+	command					OutboxCommand
+	event					OutboxEvent
+	record					OutboxRecord
+}
