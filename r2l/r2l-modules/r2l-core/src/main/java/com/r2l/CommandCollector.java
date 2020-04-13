@@ -160,15 +160,17 @@ public class CommandCollector {
 						ProducerConfig.ACKS_CONFIG, "all" //
 				)));
 				sender //
-						.send(Flux.<OutboxCommand>create(sink -> {
-							sinkRef.set(sink);
-							sink.onCancel(() -> {
-								sinkRef.set(null);
-							});
-						}) //
-								.map(command -> {
-									return SenderRecord.create(new ProducerRecord<byte[], byte[]>(commandTopic, command.getTransactionId().getBytes(), command.marshal()), command);
-								}) //
+						.send( //
+								Flux //
+										.<OutboxCommand> create(sink -> {
+											sinkRef.set(sink);
+											sink.onCancel(() -> {
+												sinkRef.set(null);
+											});
+										}) //
+										.map(command -> {
+											return SenderRecord.create(new ProducerRecord<byte[], byte[]>(commandTopic, command.getTransactionId().getBytes(), command.marshal()), command);
+										}) //
 						) //
 						.subscribe(result -> {
 							try (Connection connection = DataSourceFactory.get(uri, user, password).getConnection()) {
