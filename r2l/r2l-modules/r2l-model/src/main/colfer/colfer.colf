@@ -24,3 +24,33 @@ type OutboxData struct {
 	event					OutboxEvent
 	record					OutboxRecord
 }
+
+type OutboxCommandCollectResult struct {
+	markPoint				text
+	transactionId			text
+	maxEventId				text
+	maxSerialNo				uint32
+}
+
+type OutboxEventCollectResult struct {
+	markPoint				text
+	transactionId			text
+	maxEventId				text
+	maxSerialNo				uint32
+	eventId					text
+	serialNo				uint32
+	eventTarget				text
+	action					uint8
+}
+
+type OutboxRecordCollectResult struct {
+	markPoint				text
+	transactionId			text
+	maxEventId				text
+	maxSerialNo				uint32
+	eventId					text
+	serialNo				uint32
+	eventTarget				text
+	action					uint8
+	record					binary
+}

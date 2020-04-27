@@ -59,5 +59,7 @@
 		<module>r2l-model</module>
 		<module>r2l-core</module>
 		<module>r2l-tools</module>
+		<module>r2l-source</module>
+		<module>r2l-sink</module>
 	</modules>
 </project>
